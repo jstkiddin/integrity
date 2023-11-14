@@ -22,7 +22,7 @@
   },
   "include": [
     "src"
-  ],
+, "index.tsx"  ],
   "paths": {
     "crypto": [
       "node_modules/crypto-browserify"
