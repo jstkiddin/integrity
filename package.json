@@ -1,6 +1,7 @@
 {
   "name": "my-app",
   "version": "0.1.0",
+  "homepage": "https://jstkiddin.github.io/integrity",
   "private": true,
   "dependencies": {
     "@babel/core": "^7.23.2",
@@ -19,6 +20,7 @@
     "crc_32_ts": "^1.0.13",
     "crypto-browserify": "^3.12.0",
     "crypto-es": "^2.1.0",
+    "gh-pages": "^6.0.0",
     "nano-time": "^1.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -29,6 +31,8 @@
     "web-vitals": "^2.1.0"
   },
   "scripts": {
+    "predeploy": "npm run build",
+   "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
