@@ -26,22 +26,49 @@ export function CRC32Function(text: string) {
   return new CRC32().calculate(text).toString()
 }
 
-export function Hamming(text: string, prob?: number) {
+export function Hamming(text: string, prob?: number, error?: number) {
   let encodedData: string = encodeHamming(text as string)
-
   if (prob) {
-    const newText =
-      prob >= 50
-        ? prob < 75
-          ? generateFail(encodedData, false)
-          : generateFail(encodedData, true)
-        : encodedData
-    const decodedData = decodeHamming(newText)
+    switch (error) {
+      case 1: {
+        const newText =
+          prob >= 50 ? generateFail(encodedData, false, false) : encodedData
+        const decodedData = decodeHamming(newText)
 
-    return { text, encodedData, decodedData }
+        return { text, encodedData, decodedData }
+      }
+      case 2: {
+        const newText =
+          prob >= 50
+            ? prob < 75
+              ? generateFail(encodedData, false, false)
+              : generateFail(encodedData, true, false)
+            : encodedData
+        const decodedData = decodeHamming(newText)
+
+        return { text, encodedData, decodedData }
+      }
+      case 3: {
+        const newText =
+          prob >= 50
+            ? prob < 67
+              ? generateFail(encodedData, false, false)
+              : prob < 83
+              ? generateFail(encodedData, true, false)
+              : generateFail(encodedData, true, true)
+            : encodedData
+
+        const decodedData = decodeHamming(newText)
+
+        return { text, encodedData, decodedData }
+      }
+      default: {
+        const decodedData = decodeHamming(encodedData)
+        return { text, encodedData, decodedData }
+      }
+    }
   } else {
     const decodedData = decodeHamming(encodedData)
-
     return { text, encodedData, decodedData }
   }
 }
@@ -117,14 +144,22 @@ export function convert(text: string) {
   return output
 }
 
-export function generateFail(text: string, hamming: boolean) {
+export function generateFail(text: string, hamming: boolean, three: boolean) {
   const indexToChange = getRandomPlacement(text.length)
   let output = ''
+
   for (var i = 0; i < text.length; i++) {
     if (indexToChange === i) {
       output += text[i] === '0' ? '1' : '0'
-    } else if (hamming && indexToChange + 1 === i) {
-      output += text[i] === '0' ? '1' : '0'
+    } else if (hamming) {
+      if (!three && indexToChange + 1 === i) {
+        output += text[i] === '0' ? '1' : '0'
+      }
+      if (three) {
+        if (indexToChange + 1 === i || indexToChange + 2 === i) {
+          output += text[i] === '0' ? '1' : '0'
+        }
+      }
     } else {
       output += text[i]
     }

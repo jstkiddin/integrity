@@ -7,6 +7,8 @@ import {
   MD5Function,
   SHA256Function,
 } from '../constants/calculate'
+
+import Timestamp from 'timestamp-nano'
 type CodedText = {
   crc32: string
   sha256: string
@@ -32,25 +34,30 @@ const HashPage = () => {
       md5: '',
     }
 
-    let startTime = new Date().getTime()
-    const time = getTime()
+    let startTime = Timestamp.fromString(new Date().toString()).getNano()
 
     for (let i = 0; i > 10000000; i++) {
       MD5Function(text)
     }
 
-    let endTime = new Date().getTime()
+    let endTime = Timestamp.fromString(new Date().toString()).getNano()
     times.md5 = `${endTime - startTime} ns`
 
-    startTime = new Date().getTime()
+    startTime = Timestamp.fromString(new Date().toString()).getNano()
     for (let i = 0; i > 10000000; i++) {
       SHA256Function(text)
     }
-    endTime = new Date().getTime()
+    endTime = Timestamp.fromString(new Date().toString()).getNano()
+    times.sha256 = `${endTime - startTime} ns`
+
+    startTime = Timestamp.fromString(new Date().toString()).getNano()
 
     for (let i = 0; i > 10000000; i++) {
       CRC32Function(text)
     }
+
+    endTime = Timestamp.fromString(new Date().toString()).getNano()
+    times.crc32 = `${endTime - startTime} ns`
 
     setCodedText({
       crc32: CRC32Function(text),
@@ -107,7 +114,7 @@ const HashPage = () => {
             <Divider />
             <Box>
               <ResultTypography marginTop={2}>
-                Time for 100 iterations:
+                Time for 10000000 iterations:
               </ResultTypography>
 
               <ResultTypography>MD5: {time.md5}</ResultTypography>

@@ -10,6 +10,8 @@ import {
   MD5Function,
   SHA256Function,
 } from '../constants/calculate'
+import Timestamp from 'timestamp-nano'
+
 type CodedText = { success: number; resend: number; time: string }
 
 const OtherPage = () => {
@@ -50,145 +52,185 @@ const OtherPage = () => {
     setCombined({ success: 0, resend: 0, time: '' })
   }, [])
 
-  const handleClick = useCallback((text: string, int: number) => {
-    clearAll()
-    const ifThereLetters = text
-      .split('')
-      .find((char) => char !== '1' && char !== '0')
+  const textError = (error: number, prob: number, text: string) => {
+    switch (error) {
+      case 1: {
+        const newText = prob >= 50 ? generateFail(text, false, false) : text
 
-    const textFormated = ifThereLetters ? convert(text) : text
-    const initCRC2 = CRC32Function(textFormated)
-    const initSHA2 = SHA256Function(textFormated)
-    const initMD5 = MD5Function(textFormated)
-    const initHamming = Hamming(textFormated)
-
-    let successCount = 0
-    let resendCount = 0
-    for (let index = 0; index < int; index++) {
-      let success = false
-      while (!success) {
-        const prob1 = getProbability()
+        return newText
+      }
+      case 2: {
         const newText =
-          prob1 <= 50 ? generateFail(textFormated, false) : textFormated
-        setTimeout(() => {}, 2000)
-        const crc = CRC32Function(newText)
-        if (initCRC2 === crc) {
-          success = true
-          successCount++
-        } else {
-          resendCount++
-        }
+          prob >= 50
+            ? prob < 75
+              ? generateFail(text, false, false)
+              : generateFail(text, true, false)
+            : text
+
+        return newText
       }
-    }
-
-    setCRC32({
-      success: successCount,
-      resend: resendCount,
-      time: crc32.time,
-    })
-    successCount = 0
-    resendCount = 0
-
-    for (let index = 0; index < int; index++) {
-      let success = false
-      do {
-        const prob2 = getProbability()
+      case 3: {
         const newText =
-          prob2 >= 50 ? generateFail(textFormated, false) : textFormated
-        const sha = SHA256Function(newText)
-        setTimeout(() => {}, 2000)
+          prob >= 50
+            ? prob < 67
+              ? generateFail(text, false, false)
+              : prob < 83
+              ? generateFail(text, true, false)
+              : generateFail(text, true, true)
+            : text
 
-        if (initSHA2 === sha) {
-          success = true
-          successCount++
-        } else {
-          resendCount++
-        }
-      } while (!success)
+        return newText
+      }
+      default:
+        return text
     }
+  }
 
-    setSHA256({
-      success: successCount,
-      resend: resendCount,
-      time: sha256.time,
-    })
-    successCount = 0
-    resendCount = 0
+  const handleClick = useCallback(
+    (text: string, int: number, errors: number) => {
+      clearAll()
 
-    for (let index = 0; index < int; index++) {
-      let success = false
-      while (!success) {
+      const ifThereLetters = text
+        .split('')
+        .find((char) => char !== '1' && char !== '0')
+
+      const textFormated = ifThereLetters ? convert(text) : text
+      const initCRC2 = CRC32Function(textFormated)
+      const initSHA2 = SHA256Function(textFormated)
+      const initMD5 = MD5Function(textFormated)
+      const initHamming = Hamming(textFormated)
+
+      let successCount = 0
+      let resendCount = 0
+      let startTime = Timestamp.fromString(new Date().toString()).getNano()
+
+      for (let index = 0; index < int; index++) {
+        let success = false
+        while (!success) {
+          const prob1 = getProbability()
+          const newText = textError(errors, prob1, textFormated)
+          setTimeout(() => {}, 2000)
+          const crc = CRC32Function(newText)
+          if (initCRC2 === crc) {
+            success = true
+            successCount++
+          } else {
+            resendCount++
+          }
+        }
+      }
+      let endTime = Timestamp.fromString(new Date().toString()).getNano()
+
+      setCRC32({
+        success: successCount,
+        resend: resendCount,
+        time: `${endTime - startTime} ns`,
+      })
+      successCount = 0
+      resendCount = 0
+      startTime = Timestamp.fromString(new Date().toString()).getNano()
+
+      for (let index = 0; index < int; index++) {
+        let success = false
+        do {
+          const prob2 = getProbability()
+          const newText = textError(errors, prob2, textFormated)
+
+          const sha = SHA256Function(newText)
+          setTimeout(() => {}, 2000)
+
+          if (initSHA2 === sha) {
+            success = true
+            successCount++
+          } else {
+            resendCount++
+          }
+        } while (!success)
+      }
+      endTime = Timestamp.fromString(new Date().toString()).getNano()
+
+      setSHA256({
+        success: successCount,
+        resend: resendCount,
+        time: `${endTime - startTime} ns`,
+      })
+      successCount = 0
+      resendCount = 0
+
+      startTime = Timestamp.fromString(new Date().toString()).getNano()
+      for (let index = 0; index < int; index++) {
+        let success = false
+        while (!success) {
+          const prob2 = getProbability()
+          const newText = textError(errors, prob2, textFormated)
+
+          const md = MD5Function(newText)
+          setTimeout(() => {}, 2000)
+
+          if (initMD5 === md) {
+            success = true
+            successCount++
+          } else {
+            resendCount++
+          }
+        }
+      }
+      endTime = Timestamp.fromString(new Date().toString()).getNano()
+      setMD5({
+        success: successCount,
+        resend: resendCount,
+        time: `${endTime - startTime} ns`,
+      })
+      successCount = 0
+      resendCount = 0
+      startTime = Timestamp.fromString(new Date().toString()).getNano()
+      for (let index = 0; index < int; index++) {
         const prob2 = getProbability()
-        const newText =
-          prob2 >= 50 ? generateFail(textFormated, false) : textFormated
-        const md = MD5Function(newText)
+        const ham = Hamming(textFormated, prob2, errors)
         setTimeout(() => {}, 2000)
 
-        if (initMD5 === md) {
-          success = true
+        if (initHamming.decodedData === ham.decodedData) {
           successCount++
         } else {
           resendCount++
         }
       }
-    }
-    setMD5({
-      success: successCount,
-      resend: resendCount,
-      time: md5.time,
-    })
-    successCount = 0
-    resendCount = 0
+      endTime = Timestamp.fromString(new Date().toString()).getNano()
+      setHamming({
+        success: successCount,
+        resend: resendCount,
+        time: `${endTime - startTime} ns`,
+      })
+      successCount = 0
+      resendCount = 0
+      startTime = Timestamp.fromString(new Date().toString()).getNano()
+      //combined
+      for (let index = 0; index < int; index++) {
+        let success = false
+        while (!success) {
+          const prob2 = getProbability()
 
-    for (let index = 0; index < int; index++) {
-      const prob2 = getProbability()
-      const ham = Hamming(textFormated, prob2)
-      setTimeout(() => {}, 2000)
+          setTimeout(() => {}, 2000)
+          const ham = Hamming(textFormated, prob2, errors)
+          const md = MD5Function(ham.decodedData)
 
-      if (initHamming.decodedData === ham.decodedData) {
-        successCount++
-      } else {
-        resendCount++
-      }
-    }
-
-    setHamming({
-      success: successCount,
-      resend: resendCount,
-      time: hamming.time,
-    })
-    successCount = 0
-    resendCount = 0
-
-    //combined
-    for (let index = 0; index < int; index++) {
-      let success = false
-      while (!success) {
-        const prob2 = getProbability()
-
-        setTimeout(() => {}, 2000)
-        const ham = Hamming(textFormated, prob2)
-        const md = MD5Function(ham.decodedData)
-
-        if (initMD5 === md) {
-          success = true
-          successCount++
-        } else {
-          resendCount++
+          if (initMD5 === md) {
+            success = true
+            successCount++
+          } else {
+            resendCount++
+          }
         }
       }
-    }
-
-    setCombined({
-      success: successCount,
-      resend: resendCount,
-      time: combined.time,
-    })
-
-    // let startTime = new Date().getTime()
-    // const time = getTime()
-    // let endTime = new Date().getTime()
-  }, [])
+      endTime = Timestamp.fromString(new Date().toString()).getNano()
+      setCombined({
+        success: successCount,
+        resend: resendCount,
+        time: `${endTime - startTime} ns`,
+      })
+    },
+    []
+  )
 
   return (
     <Page

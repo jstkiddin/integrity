@@ -3,6 +3,8 @@ import {
   Button,
   Card,
   Input,
+  MenuItem,
+  Select,
   styled,
   TextField,
   Typography,
@@ -11,7 +13,7 @@ import { useState } from 'react'
 import { GenerateButton } from '../GenerateButton/GenetareButton'
 
 interface PageProps {
-  handleGenerate: (value: string, iterations: number) => void
+  handleGenerate: (value: string, iterations: number, errors: number) => void
   hash: boolean
   iterations?: string
   setIterations?: React.Dispatch<React.SetStateAction<string>>
@@ -28,19 +30,19 @@ const Page = ({
   const [textValue, setText] = useState<string>('')
 
   const [fileName, setFileName] = useState<string>('')
+  const [errors, setErrors] = useState<string>('')
 
   const handleText = () => {
-    handleGenerate(textValue, parseInt(iterations ?? '0'))
+    handleGenerate(
+      textValue,
+      parseInt(iterations ?? '0'),
+      parseInt(errors ?? '0')
+    )
   }
 
   const onClear = (e: any) => {
     setText('')
     setFileName('')
-    // reader.onloadend = async (e: any) => {
-    //   const text = e.target.result
-    //   setText(text)
-    // }
-    // reader.readAsText(e.target.files[0])
   }
 
   const handleChange = async (e: any) => {
@@ -54,6 +56,10 @@ const Page = ({
     reader.readAsText(e.target.files[0])
 
     setFileName(e.target.files[0].name)
+  }
+
+  const handleSelect = (e: any) => {
+    setErrors(e.target.value)
   }
 
   return (
@@ -110,20 +116,38 @@ const Page = ({
           </FileNameBlock>
         </Box>
         {hash ? null : (
-          <Box sx={{ marginTop: -2.5 }}>
-            <Typography fontSize={12}>Iterations:</Typography>
+          <Box sx={{ marginTop: -2.5, marginLeft: 4, display: 'flex', gap: 1 }}>
+            <Box>
+              <Typography fontSize={12}>Iterations:</Typography>
 
-            <TextField
-              required
-              error={/[^0-9]+/.test(iterations!)}
-              id="outlined-basic"
-              size="small"
-              variant="outlined"
-              value={iterations}
-              onChange={(e) => {
-                setIterations && setIterations(e.currentTarget.value ?? '')
-              }}
-            />
+              <TextField
+                required
+                error={/[^0-9]+/.test(iterations!)}
+                id="outlined-basic"
+                size="small"
+                variant="outlined"
+                value={iterations}
+                onChange={(e) => {
+                  setIterations && setIterations(e.currentTarget.value ?? '')
+                }}
+              />
+            </Box>
+            <Box>
+              <Typography fontSize={12}>Errors:</Typography>
+              <Select
+                required
+                id="outlined-basic"
+                size="small"
+                disabled={fileName !== ''}
+                variant="outlined"
+                value={errors}
+                onChange={handleSelect}
+              >
+                <MenuItem value={1}>1</MenuItem>
+                <MenuItem value={2}>2</MenuItem>
+                <MenuItem value={3}>3</MenuItem>
+              </Select>
+            </Box>
           </Box>
         )}
 
@@ -133,7 +157,8 @@ const Page = ({
               ? textValue === '' && fileName === ''
               : (textValue === '' && fileName === '') ||
                 iterations === '' ||
-                /[^0-9]+/.test(iterations!)
+                /[^0-9]+/.test(iterations!) ||
+                errors === ''
           }
           onClick={handleText}
         />
