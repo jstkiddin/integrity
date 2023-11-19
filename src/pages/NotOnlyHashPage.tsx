@@ -181,18 +181,39 @@ const OtherPage = () => {
         resend: resendCount,
         time: `${endTime - startTime} ns`,
       })
+
       successCount = 0
       resendCount = 0
+
       startTime = Timestamp.fromString(new Date().toString()).getNano()
       for (let index = 0; index < int; index++) {
-        const prob2 = getProbability()
-        const ham = Hamming(textFormated, prob2, errors)
-        setTimeout(() => {}, 2000)
-
-        if (initHamming.decodedData === ham.decodedData) {
-          successCount++
-        } else {
-          resendCount++
+        let success = false
+        while (!success) {
+          const prob2 = getProbability()
+          console.log(prob2)
+          const ham = Hamming(textFormated, prob2, errors)
+          setTimeout(() => {}, 2000)
+          if (errors !== 3) {
+            if (initHamming.decodedData === ham.decodedData) {
+              success = true
+              successCount++
+            }
+            if (errors === 2 && prob2 >= 75) {
+              resendCount++
+            }
+          }
+          if (errors === 3) {
+            if (prob2 >= 67 && prob2 < 83) {
+              resendCount++
+            } else if (prob2 >= 83) {
+              success = true
+            } else {
+              if (initHamming.decodedData === ham.decodedData) {
+                success = true
+                successCount++
+              }
+            }
+          }
         }
       }
       endTime = Timestamp.fromString(new Date().toString()).getNano()
@@ -311,7 +332,7 @@ const OtherPage = () => {
                   ? '10'
                   : iterations}
               </ResultTypography>
-              <ResultTypography>Resend: - </ResultTypography>
+              <ResultTypography>Resend: {hamming.resend} </ResultTypography>
               <ResultTypography>
                 Time for{' '}
                 {iterations === '' || /[^0-9]+/.test(iterations)
