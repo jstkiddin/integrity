@@ -138,7 +138,6 @@ const Page = ({
                 required
                 id="outlined-basic"
                 size="small"
-                disabled={fileName !== ''}
                 variant="outlined"
                 value={errors}
                 onChange={handleSelect}

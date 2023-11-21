@@ -1,5 +1,6 @@
-import { Box, Card, styled, Typography } from '@mui/material'
+import { Box, Card, IconButton, styled, Typography } from '@mui/material'
 import { useCallback, useState } from 'react'
+import InfoIcon from '@mui/icons-material/Info'
 import Page from '../componets/Page/Page'
 import {
   convert,
@@ -190,7 +191,6 @@ const OtherPage = () => {
         let success = false
         while (!success) {
           const prob2 = getProbability()
-          console.log(prob2)
           const ham = Hamming(textFormated, prob2, errors)
           setTimeout(() => {}, 2000)
           if (errors !== 3) {
@@ -231,15 +231,29 @@ const OtherPage = () => {
         while (!success) {
           const prob2 = getProbability()
 
-          setTimeout(() => {}, 2000)
-          const ham = Hamming(textFormated, prob2, errors)
+          const ham = Hamming(textFormated, 50, errors)
           const md = MD5Function(ham.decodedData)
 
-          if (initMD5 === md) {
-            success = true
-            successCount++
-          } else {
-            resendCount++
+          if (errors !== 3) {
+            if (initMD5 === md) {
+              success = true
+              successCount++
+            }
+            if (errors === 2 && prob2 >= 75) {
+              resendCount++
+            }
+          }
+          if (errors === 3) {
+            if (prob2 >= 67 && prob2 < 83) {
+              resendCount++
+            } else if (prob2 >= 83) {
+              resendCount++
+            } else {
+              if (initMD5 === md) {
+                success = true
+                successCount++
+              }
+            }
           }
         }
       }
@@ -264,7 +278,18 @@ const OtherPage = () => {
         <ResultTypography>Results:</ResultTypography>
         <ResultBox>
           <ResBlock>
-            <ResultTypography>MD5</ResultTypography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.2 }}>
+              <ResultTypography>MD5</ResultTypography>
+              <IconButton
+                size="small"
+                sx={{ width: '20px', height: '20px', marginBottom: '5px' }}
+              >
+                <InfoIcon
+                  fontSize="small"
+                  sx={{ width: '15px', height: '15px' }}
+                />
+              </IconButton>
+            </Box>
             <StyledCard>
               <ResultTypography>
                 Success: {md5.success}/
@@ -273,6 +298,9 @@ const OtherPage = () => {
                   : iterations}
               </ResultTypography>
               <ResultTypography>Resend: {md5.resend}</ResultTypography>
+              <ResultTypography>
+                Avarage Resend: {md5.resend / parseInt(iterations)}
+              </ResultTypography>
               <ResultTypography>
                 Time for{' '}
                 {iterations === '' || /[^0-9]+/.test(iterations)
@@ -283,7 +311,18 @@ const OtherPage = () => {
             </StyledCard>
           </ResBlock>
           <ResBlock>
-            <ResultTypography>SHA2</ResultTypography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.2 }}>
+              <ResultTypography>SHA2</ResultTypography>
+              <IconButton
+                size="small"
+                sx={{ width: '20px', height: '20px', marginBottom: '5px' }}
+              >
+                <InfoIcon
+                  fontSize="small"
+                  sx={{ width: '15px', height: '15px' }}
+                />
+              </IconButton>
+            </Box>
             <StyledCard>
               <ResultTypography>
                 Success: {sha256.success}/
@@ -292,6 +331,9 @@ const OtherPage = () => {
                   : iterations}
               </ResultTypography>
               <ResultTypography>Resend: {sha256.resend}</ResultTypography>
+              <ResultTypography>
+                Avarage Resend: {sha256.resend / parseInt(iterations)}
+              </ResultTypography>
               <ResultTypography>
                 Time for{' '}
                 {iterations === '' || /[^0-9]+/.test(iterations)
@@ -303,7 +345,18 @@ const OtherPage = () => {
           </ResBlock>
 
           <ResBlock>
-            <ResultTypography>CRC</ResultTypography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.2 }}>
+              <ResultTypography>CRC</ResultTypography>
+              <IconButton
+                size="small"
+                sx={{ width: '20px', height: '20px', marginBottom: '5px' }}
+              >
+                <InfoIcon
+                  fontSize="small"
+                  sx={{ width: '15px', height: '15px' }}
+                />
+              </IconButton>
+            </Box>
             <StyledCard>
               <ResultTypography>
                 Success:
@@ -313,6 +366,9 @@ const OtherPage = () => {
                   : iterations}
               </ResultTypography>
               <ResultTypography>Resend: {crc32.resend}</ResultTypography>
+              <ResultTypography>
+                Avarage Resend: {crc32.resend / parseInt(iterations)}
+              </ResultTypography>
               <ResultTypography>
                 Time for{' '}
                 {iterations === '' || /[^0-9]+/.test(iterations)
@@ -324,7 +380,18 @@ const OtherPage = () => {
           </ResBlock>
 
           <ResBlock>
-            <ResultTypography>Hamming</ResultTypography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.2 }}>
+              <ResultTypography>Hamming</ResultTypography>
+              <IconButton
+                size="small"
+                sx={{ width: '20px', height: '20px', marginBottom: '5px' }}
+              >
+                <InfoIcon
+                  fontSize="small"
+                  sx={{ width: '15px', height: '15px' }}
+                />
+              </IconButton>
+            </Box>
             <StyledCard>
               <ResultTypography>
                 Success:{hamming.success}/
@@ -333,6 +400,9 @@ const OtherPage = () => {
                   : iterations}
               </ResultTypography>
               <ResultTypography>Resend: {hamming.resend} </ResultTypography>
+              <ResultTypography>
+                Avarage Resend: {hamming.resend / parseInt(iterations)}
+              </ResultTypography>
               <ResultTypography>
                 Time for{' '}
                 {iterations === '' || /[^0-9]+/.test(iterations)
@@ -353,6 +423,9 @@ const OtherPage = () => {
                   : iterations}
               </ResultTypography>
               <ResultTypography>Resend: {combined.resend}</ResultTypography>
+              <ResultTypography>
+                Avarage Resend: {combined.resend / parseInt(iterations)}
+              </ResultTypography>
               <ResultTypography>
                 Time for{' '}
                 {iterations === '' || /[^0-9]+/.test(iterations)

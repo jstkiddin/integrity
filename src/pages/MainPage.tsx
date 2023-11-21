@@ -48,8 +48,8 @@ export const MainPage = () => {
           onChange={handleChange}
           aria-label="basic tabs example"
         >
-          <Tab label="Hash" {...a11yProps(0)} />
-          <Tab label="SHA256" {...a11yProps(1)} />
+          <Tab label="Tab 1" {...a11yProps(0)} />
+          <Tab label="Tab 2" {...a11yProps(1)} />
         </Tabs>
 
         <CustomTabPanel value={value} index={0}>
