@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/integrity/static/css/main.f855e6bc.css",
-    "main.js": "/integrity/static/js/main.66eb3815.js",
+    "main.js": "/integrity/static/js/main.b66e39f8.js",
     "index.html": "/integrity/index.html",
     "main.f855e6bc.css.map": "/integrity/static/css/main.f855e6bc.css.map",
-    "main.66eb3815.js.map": "/integrity/static/js/main.66eb3815.js.map"
+    "main.b66e39f8.js.map": "/integrity/static/js/main.b66e39f8.js.map"
   },
   "entrypoints": [
     "static/css/main.f855e6bc.css",
-    "static/js/main.66eb3815.js"
+    "static/js/main.b66e39f8.js"
   ]
 }
