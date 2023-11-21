@@ -231,7 +231,7 @@ const OtherPage = () => {
         while (!success) {
           const prob2 = getProbability()
 
-          const ham = Hamming(textFormated, 50, errors)
+          const ham = Hamming(textFormated, prob2, errors)
           const md = MD5Function(ham.decodedData)
 
           if (errors !== 3) {
