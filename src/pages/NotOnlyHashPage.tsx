@@ -1,4 +1,11 @@
-import { Box, Card, IconButton, styled, Typography } from '@mui/material'
+import {
+  Box,
+  Card,
+  CircularProgress,
+  IconButton,
+  styled,
+  Typography,
+} from '@mui/material'
 import { useCallback, useState } from 'react'
 import InfoIcon from '@mui/icons-material/Info'
 import Page from '../componets/Page/Page'
@@ -42,6 +49,7 @@ const OtherPage = () => {
     resend: 0,
     time: '',
   })
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const [iterations, setIterations] = useState<string>('10')
 
@@ -89,6 +97,7 @@ const OtherPage = () => {
 
   const handleClick = useCallback(
     (text: string, int: number, errors: number) => {
+      setIsLoading(true)
       clearAll()
 
       const ifThereLetters = text
@@ -103,7 +112,7 @@ const OtherPage = () => {
 
       let successCount = 0
       let resendCount = 0
-      let startTime = Timestamp.fromString(new Date().toString()).getNano()
+      let startTime = performance.now()
 
       for (let index = 0; index < int; index++) {
         let success = false
@@ -120,16 +129,16 @@ const OtherPage = () => {
           }
         }
       }
-      let endTime = Timestamp.fromString(new Date().toString()).getNano()
+      let endTime = performance.now()
 
       setCRC32({
         success: successCount,
         resend: resendCount,
-        time: `${endTime - startTime} ns`,
+        time: `${endTime - startTime} ms`,
       })
       successCount = 0
       resendCount = 0
-      startTime = Timestamp.fromString(new Date().toString()).getNano()
+      startTime = performance.now()
 
       for (let index = 0; index < int; index++) {
         let success = false
@@ -148,17 +157,17 @@ const OtherPage = () => {
           }
         } while (!success)
       }
-      endTime = Timestamp.fromString(new Date().toString()).getNano()
+      endTime = performance.now()
 
       setSHA256({
         success: successCount,
         resend: resendCount,
-        time: `${endTime - startTime} ns`,
+        time: `${endTime - startTime} ms`,
       })
       successCount = 0
       resendCount = 0
 
-      startTime = Timestamp.fromString(new Date().toString()).getNano()
+      startTime = performance.now()
       for (let index = 0; index < int; index++) {
         let success = false
         while (!success) {
@@ -176,22 +185,23 @@ const OtherPage = () => {
           }
         }
       }
-      endTime = Timestamp.fromString(new Date().toString()).getNano()
+      endTime = performance.now()
       setMD5({
         success: successCount,
         resend: resendCount,
-        time: `${endTime - startTime} ns`,
+        time: `${endTime - startTime} ms`,
       })
 
       successCount = 0
       resendCount = 0
 
-      startTime = Timestamp.fromString(new Date().toString()).getNano()
+      startTime = performance.now()
       for (let index = 0; index < int; index++) {
         let success = false
         while (!success) {
           const prob2 = getProbability()
           const ham = Hamming(textFormated, prob2, errors)
+
           setTimeout(() => {}, 2000)
           if (errors !== 3) {
             if (initHamming.decodedData === ham.decodedData) {
@@ -216,15 +226,15 @@ const OtherPage = () => {
           }
         }
       }
-      endTime = Timestamp.fromString(new Date().toString()).getNano()
+      endTime = performance.now()
       setHamming({
         success: successCount,
         resend: resendCount,
-        time: `${endTime - startTime} ns`,
+        time: `${endTime - startTime} ms`,
       })
       successCount = 0
       resendCount = 0
-      startTime = Timestamp.fromString(new Date().toString()).getNano()
+      startTime = performance.now()
       //combined
       for (let index = 0; index < int; index++) {
         let success = false
@@ -233,7 +243,6 @@ const OtherPage = () => {
 
           const ham = Hamming(textFormated, prob2, errors)
           const md = MD5Function(ham.decodedData)
-
           if (errors !== 3) {
             if (initMD5 === md) {
               success = true
@@ -257,14 +266,29 @@ const OtherPage = () => {
           }
         }
       }
-      endTime = Timestamp.fromString(new Date().toString()).getNano()
+      endTime = performance.now()
       setCombined({
         success: successCount,
         resend: resendCount,
-        time: `${endTime - startTime} ns`,
+        time: `${endTime - startTime} ms`,
       })
+
+      setIsLoading(false)
     },
     []
+  )
+
+  const loader = (
+    <Box
+      sx={{
+        height: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <CircularProgress />
+    </Box>
   )
 
   return (

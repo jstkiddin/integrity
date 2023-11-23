@@ -1,4 +1,11 @@
-import { Box, Divider, styled, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Divider,
+  IconButton,
+  styled,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { useState } from 'react'
 import Page from '../componets/Page/Page'
 import {
@@ -7,6 +14,7 @@ import {
   MD5Function,
   SHA256Function,
 } from '../constants/calculate'
+import InfoIcon from '@mui/icons-material/Info'
 
 import Timestamp from 'timestamp-nano'
 type CodedText = {
@@ -14,6 +22,8 @@ type CodedText = {
   sha256: string
   md5: string
 }
+
+const iter = 10000000000000
 
 const HashPage = () => {
   const [codedText, setCodedText] = useState<CodedText>({
@@ -27,37 +37,48 @@ const HashPage = () => {
     md5: '',
   })
 
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const MD5Func = (text: string) => {
+    for (let i = 0; i > iter; i++) {
+      MD5Function(text)
+    }
+  }
+
+  const SHAFunc = (text: string) => {
+    for (let i = 0; i > iter; i++) {
+      SHA256Function(text)
+    }
+  }
+
+  const CRCFunc = (text: string) => {
+    for (let i = 0; i > iter; i++) {
+      CRC32Function(text)
+    }
+  }
   const handleClick = (text: string) => {
+    setIsLoading(true)
     let times = {
       crc32: '',
       sha256: '',
       md5: '',
     }
 
-    let startTime = Timestamp.fromString(new Date().toString()).getNano()
+    let startTime = performance.now()
+    MD5Func(text)
+    let endTime = performance.now()
+    times.md5 = `${endTime - startTime} ms`
 
-    for (let i = 0; i > 10000000; i++) {
-      MD5Function(text)
-    }
+    startTime = performance.now()
+    SHAFunc(text)
+    endTime = performance.now()
+    times.sha256 = `${endTime - startTime} ms`
 
-    let endTime = Timestamp.fromString(new Date().toString()).getNano()
-    times.md5 = `${endTime - startTime} ns`
+    startTime = performance.now()
 
-    startTime = Timestamp.fromString(new Date().toString()).getNano()
-    for (let i = 0; i > 10000000; i++) {
-      SHA256Function(text)
-    }
-    endTime = Timestamp.fromString(new Date().toString()).getNano()
-    times.sha256 = `${endTime - startTime} ns`
+    CRCFunc(text)
 
-    startTime = Timestamp.fromString(new Date().toString()).getNano()
-
-    for (let i = 0; i > 10000000; i++) {
-      CRC32Function(text)
-    }
-
-    endTime = Timestamp.fromString(new Date().toString()).getNano()
-    times.crc32 = `${endTime - startTime} ns`
+    endTime = performance.now()
+    times.crc32 = `${endTime - startTime} ms`
 
     setCodedText({
       crc32: CRC32Function(text),
@@ -66,6 +87,7 @@ const HashPage = () => {
     })
 
     setTime(times)
+    // setIsLoading(false)
   }
 
   return (
@@ -74,7 +96,18 @@ const HashPage = () => {
         <ResultTypography>Results:</ResultTypography>
         <ResultBox>
           <ResBlock>
-            <ResultTypography>MD5</ResultTypography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.2 }}>
+              <ResultTypography>MD5</ResultTypography>
+              <IconButton
+                size="small"
+                sx={{ width: '20px', height: '20px', marginBottom: '5px' }}
+              >
+                <InfoIcon
+                  fontSize="small"
+                  sx={{ width: '15px', height: '15px' }}
+                />
+              </IconButton>
+            </Box>
             <TextField
               multiline
               disabled
@@ -85,7 +118,18 @@ const HashPage = () => {
             />
           </ResBlock>
           <ResBlock>
-            <ResultTypography>SHA2</ResultTypography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.2 }}>
+              <ResultTypography>SHA2</ResultTypography>
+              <IconButton
+                size="small"
+                sx={{ width: '20px', height: '20px', marginBottom: '5px' }}
+              >
+                <InfoIcon
+                  fontSize="small"
+                  sx={{ width: '15px', height: '15px' }}
+                />
+              </IconButton>
+            </Box>
             <TextField
               multiline
               disabled
@@ -97,7 +141,18 @@ const HashPage = () => {
           </ResBlock>
 
           <ResBlock>
-            <ResultTypography>CRC</ResultTypography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.2 }}>
+              <ResultTypography>CRC</ResultTypography>
+              <IconButton
+                size="small"
+                sx={{ width: '20px', height: '20px', marginBottom: '5px' }}
+              >
+                <InfoIcon
+                  fontSize="small"
+                  sx={{ width: '15px', height: '15px' }}
+                />
+              </IconButton>
+            </Box>
             <TextField
               multiline
               disabled
@@ -109,12 +164,12 @@ const HashPage = () => {
           </ResBlock>
         </ResultBox>
 
-        {time.md5 === '' ? null : (
+        {/* {time.md5 === '' ? null : (
           <TimeBox>
             <Divider />
             <Box>
               <ResultTypography marginTop={2}>
-                Time for 10000000 iterations:
+                Time for {iter} iterations:
               </ResultTypography>
 
               <ResultTypography>MD5: {time.md5}</ResultTypography>
@@ -122,7 +177,7 @@ const HashPage = () => {
               <ResultTypography>CRC: {time.crc32}</ResultTypography>
             </Box>
           </TimeBox>
-        )}
+        )} */}
       </Box>
     </Page>
   )

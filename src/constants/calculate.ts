@@ -49,14 +49,16 @@ export function Hamming(text: string, prob?: number, error?: number) {
         return { text, encodedData, decodedData }
       }
       case 3: {
-        const newText =
-          prob >= 50
-            ? prob < 67
-              ? generateFail(encodedData, false, false)
-              : prob < 83
-              ? generateFail(encodedData, true, false)
-              : generateFail(encodedData, true, true)
-            : encodedData
+        let newText = encodedData
+        if (prob >= 50 && prob < 67) {
+          newText = generateFail(encodedData, false, false)
+        }
+        if (prob >= 67 && prob < 83) {
+          newText = generateFail(encodedData, true, false)
+        }
+        if (prob >= 83) {
+          newText = generateFail(encodedData, true, true)
+        }
 
         const decodedData = decodeHamming(newText)
 
@@ -149,19 +151,34 @@ export function generateFail(text: string, hamming: boolean, three: boolean) {
   let output = ''
 
   for (var i = 0; i < text.length; i++) {
-    if (indexToChange === i) {
-      output += text[i] === '0' ? '1' : '0'
-    } else if (hamming) {
-      if (!three && indexToChange + 1 === i) {
+    if (!hamming && !three) {
+      if (indexToChange === i) {
         output += text[i] === '0' ? '1' : '0'
+      } else {
+        output += text[i]
       }
-      if (three) {
-        if (indexToChange + 1 === i || indexToChange + 2 === i) {
-          output += text[i] === '0' ? '1' : '0'
-        }
+    }
+
+    if (hamming && !three) {
+      if (indexToChange === i) {
+        output += text[i] === '0' ? '1' : '0'
+      } else if (indexToChange + 1 === i) {
+        output += text[i] === '0' ? '1' : '0'
+      } else {
+        output += text[i]
       }
-    } else {
-      output += text[i]
+    }
+
+    if (hamming && three) {
+      if (indexToChange === i) {
+        output += text[i] === '0' ? '1' : '0'
+      } else if (indexToChange + 1 === i) {
+        output += text[i] === '0' ? '1' : '0'
+      } else if (indexToChange + 2 === i) {
+        output += text[i] === '0' ? '1' : '0'
+      } else {
+        output += text[i]
+      }
     }
   }
 

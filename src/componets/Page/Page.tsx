@@ -2,7 +2,7 @@ import {
   Box,
   Button,
   Card,
-  Input,
+  IconButton,
   MenuItem,
   Select,
   styled,
@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import { useState } from 'react'
 import { GenerateButton } from '../GenerateButton/GenetareButton'
+import InfoIcon from '@mui/icons-material/Info'
 
 interface PageProps {
   handleGenerate: (value: string, iterations: number, errors: number) => void
@@ -52,6 +53,7 @@ const Page = ({
     reader.onload = async (e: any) => {
       const text = e.target.result
       setText(text)
+      console.log(textValue.length)
     }
     reader.readAsText(e.target.files[0])
 
@@ -115,53 +117,80 @@ const Page = ({
             <Typography fontSize={12}>{fileName}</Typography>
           </FileNameBlock>
         </Box>
-        {hash ? null : (
-          <Box sx={{ marginTop: -2.5, marginLeft: 4, display: 'flex', gap: 1 }}>
-            <Box>
-              <Typography fontSize={12}>Iterations:</Typography>
+        {hash ? (
+          <GenerateButton
+            disabled={
+              hash
+                ? textValue === '' && fileName === ''
+                : (textValue === '' && fileName === '') ||
+                  iterations === '' ||
+                  /[^0-9]+/.test(iterations!) ||
+                  errors === ''
+            }
+            onClick={handleText}
+          />
+        ) : (
+          <>
+            <Box
+              sx={{ marginTop: -2.5, marginLeft: 4, display: 'flex', gap: 1 }}
+            >
+              <Box>
+                <Typography fontSize={12}>Iterations:</Typography>
 
-              <TextField
-                required
-                error={/[^0-9]+/.test(iterations!)}
-                id="outlined-basic"
+                <TextField
+                  required
+                  error={/[^0-9]+/.test(iterations!)}
+                  id="outlined-basic"
+                  size="small"
+                  variant="outlined"
+                  value={iterations}
+                  onChange={(e) => {
+                    setIterations && setIterations(e.currentTarget.value ?? '')
+                  }}
+                />
+              </Box>
+              <Box>
+                <Typography fontSize={12}>Errors:</Typography>
+                <Select
+                  required
+                  id="outlined-basic"
+                  size="small"
+                  variant="outlined"
+                  value={errors}
+                  onChange={handleSelect}
+                >
+                  <MenuItem value={1}>1</MenuItem>
+                  <MenuItem value={2}>2</MenuItem>
+                  <MenuItem value={3}>3</MenuItem>
+                </Select>
+              </Box>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.2 }}>
+              <IconButton
                 size="small"
-                variant="outlined"
-                value={iterations}
-                onChange={(e) => {
-                  setIterations && setIterations(e.currentTarget.value ?? '')
-                }}
+                sx={{ width: '30px', height: '30px', marginBottom: '5px' }}
+              >
+                <InfoIcon
+                  fontSize="small"
+                  sx={{ width: '30px', height: '30px' }}
+                />
+              </IconButton>
+              <GenerateButton
+                disabled={
+                  hash
+                    ? textValue === '' && fileName === ''
+                    : (textValue === '' && fileName === '') ||
+                      iterations === '' ||
+                      /[^0-9]+/.test(iterations!) ||
+                      errors === ''
+                }
+                onClick={handleText}
               />
             </Box>
-            <Box>
-              <Typography fontSize={12}>Errors:</Typography>
-              <Select
-                required
-                id="outlined-basic"
-                size="small"
-                variant="outlined"
-                value={errors}
-                onChange={handleSelect}
-              >
-                <MenuItem value={1}>1</MenuItem>
-                <MenuItem value={2}>2</MenuItem>
-                <MenuItem value={3}>3</MenuItem>
-              </Select>
-            </Box>
-          </Box>
+          </>
         )}
-
-        <GenerateButton
-          disabled={
-            hash
-              ? textValue === '' && fileName === ''
-              : (textValue === '' && fileName === '') ||
-                iterations === '' ||
-                /[^0-9]+/.test(iterations!) ||
-                errors === ''
-          }
-          onClick={handleText}
-        />
       </InputBlock>
+
       <ResultBlock>{children}</ResultBlock>
     </Background>
   )
